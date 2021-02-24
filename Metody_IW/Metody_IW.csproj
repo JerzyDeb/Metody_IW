@@ -48,6 +48,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="australian.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="test1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

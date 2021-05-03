@@ -1,7 +1,0 @@
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\bin\Debug\Metody_IW.exe.config
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\bin\Debug\Metody_IW.exe
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\bin\Debug\Metody_IW.pdb
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\obj\Debug\Metody_IW.csprojAssemblyReference.cache
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\obj\Debug\Metody_IW.csproj.CoreCompileInputs.cache
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\obj\Debug\Metody_IW.exe
-C:\Users\Jurek\source\repos\JerzyDeb\Metody_IW\Metody_IW\obj\Debug\Metody_IW.pdb

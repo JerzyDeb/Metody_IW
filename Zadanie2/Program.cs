@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Zadanie2
 {
@@ -34,9 +35,12 @@ namespace Zadanie2
             dataset.FillArray();
             dataset.ChangeType();
             dataset.Config(0, 1);
+            Console.Clear();
+            Console.WriteLine("Nazwa pliku: " + dataset.name + " Ilość rekordów:" + dataset.length + " Ilość atrybutów: " + dataset.width);
+            Console.WriteLine("\nTwoje dane: ");
             dataset.WriteArray();
 
-            Console.WriteLine("KNN - Co chcesz zrobić: ");
+            Console.WriteLine("\nKNN - Co chcesz zrobić: ");
             Console.WriteLine("1) Dopasuj próbkę do zestawu próbek wzorcowych");
             Console.WriteLine("2) Jeden kontra reszta");
             Console.WriteLine("3) Wyjście");
@@ -45,10 +49,10 @@ namespace Zadanie2
             switch (Console.ReadLine())
             {
                 case "1":
-                    option1(dataset);
+                    option1(dataset); //Dopasowanie próbki do reszty
                     return true;
                 case "2":
-                    option2(dataset);
+                    option2(dataset); //Jeden vs reszta
                     return true;
                 case "3":
                     return false;
@@ -57,6 +61,8 @@ namespace Zadanie2
             }
 
         }
+
+        //Dopasowanie oróbki do reszty:
         private static void option1(Base dataset)
         {
 
@@ -64,7 +70,7 @@ namespace Zadanie2
             Console.Write("\n\rPodaj parametr k: ");
             int k = int.Parse(Console.ReadLine());
 
-            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego:");
+            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
             int p = int.Parse(Console.ReadLine());
 
             //Generowanie losowego rekordu:
@@ -86,7 +92,7 @@ namespace Zadanie2
                 Console.Write(item + " ");
             //------------------------------
 
-            Console.WriteLine("\nWybierz metrykę, którą liczone będą odgległości: ");
+            Console.WriteLine("\n\nWybierz metrykę, którą liczone będą odgległości: ");
             Console.WriteLine("1) Manhattan");
             Console.WriteLine("2) Metryka Euklidesowa");
             Console.WriteLine("3) Metryka Czebyszewa");
@@ -117,16 +123,20 @@ namespace Zadanie2
             Console.Write("\nTwój rekord z klasą decyzyjną: ");
             foreach (var item in record)
                 Console.Write(item + " ");
+            //------------------------------
 
             Console.ReadKey();
         }
+        //---------------------------------------------
+
+        //Jeden vs reszta:
         private static void option2(Base dataset)
         {
             Console.Clear();
             Console.Write("\n\rPodaj parametr k: ");
             int k = int.Parse(Console.ReadLine());
 
-            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego:");
+            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
             int p = int.Parse(Console.ReadLine());
 
             Console.WriteLine("\nWybierz metrykę, którą liczone będą odgległości: ");
@@ -150,7 +160,6 @@ namespace Zadanie2
             int poprawnosc = 0;
             int nieudane = 0;
             int ilosc = dataset.length;
-            //Console.WriteLine((double)28/692);
 
             for (int i = 0; i < dataset.length; i++)
             {
@@ -172,9 +181,9 @@ namespace Zadanie2
                 }
                 records[i] = tab;
             }
-
-
-            for (int i = 0; i < records.GetLength(0); i++)
+            Console.Clear();
+            Console.Write("Pracuję nad tym...");
+            Parallel.For(0,records.GetLength(0),i=>
             {
                 object[] tab0 = new object[dataset.width];
                 for (int j = 0; j < dataset.width; j++)
@@ -184,19 +193,13 @@ namespace Zadanie2
                     else
                         tab0[j] = records[i][j];
                 }
-                //var tab0 = records[i];
-                //foreach(var item in tab0)
-                //    Console.WriteLine(item+"  ");
-
-                //tab0[tab0.GetLength(0)-1] = null;
-                //WWConsole.WriteLine("Ostatnia="+records[i][records[i].GetLength(0)-1]);
                 if (sposob == 1)
                 {
                     tab0[tab0.GetLength(0) - 1] = sposob1(k, metryka, tab0, dataset, p);
                     if (tab0[tab0.GetLength(0) - 1] == null)
                     {
                         nieudane++;
-                        continue;
+                        return;
                     }
                     if (tab0[tab0.GetLength(0) - 1].ToString() == records[i][records[i].GetLength(0) - 1].ToString())
                         poprawnosc++;
@@ -208,21 +211,19 @@ namespace Zadanie2
                     if (tab0[tab0.GetLength(0) - 1] == null)
                     {
                         nieudane++;
-                        continue;
+                        return;
                     }
-                    Console.WriteLine("Przypisana:  " + tab0[tab0.GetLength(0) - 1] + "vs org: " + records[i][records[i].GetLength(0) - 1]);
                     if (tab0[tab0.GetLength(0) - 1].ToString() == records[i][records[i].GetLength(0) - 1].ToString())
                         poprawnosc++;
                 }
-                Console.WriteLine("i=" + i + " poprawnosc=" + poprawnosc);
-            }
+            });
 
-            //float proc = (poprawnosc/ilosc)*100;
-            Console.WriteLine("ilość: " + ilosc + " poprawność: " + poprawnosc);
-            Console.WriteLine("Nieudana klasyfikacja: " + nieudane + " Poprawność knn wynosi: " + (double)poprawnosc / ilosc * 100 + "%");
+            Console.Clear();
+            Console.WriteLine("Ilość rekordów: "+ilosc+"\nUdana klasyfikacja: "+(ilosc-nieudane)+"\nNieudana klasyfikacja: " + nieudane + "\nPoprawnie sklasyfikowano: "+poprawnosc+"\nPoprawność knn wynosi: " + (double)poprawnosc / ilosc * 100 + "%");
             Console.ReadKey();
 
         }
+        //---------------------------------------------
         private static object sposob1(int k, int metryka, object[] record, Base dataset,int p)
         {
             //Dodawanie do słownika każdego rekordu (Klucza) oraz odległości do wygenerowanego rekordu (Wartości):
@@ -258,8 +259,6 @@ namespace Zadanie2
 
             //Posortowanie słownika według wartości malejąco - 1. element występuje najczęściej:
             var wartoscisorted = from entry in wartosci orderby entry.Value descending select entry;
-            //foreach(var item in wartoscisorted)
-            //Console.Write(item.Key+" "+item.Value);
             if (wartoscisorted.Count() > 1)
             {
                 if (wartoscisorted.ElementAt(0).Value == wartoscisorted.ElementAt(1).Value)
@@ -283,7 +282,6 @@ namespace Zadanie2
             object[] klasy = new object[count];
             for (int i = 0; i < count; i++)
             {
-                //Console.WriteLine("i=="+i+"  "+sortedDict.ElementAt(i).Key.ElementAt(dataset.width-1));
                 if (sortedDict.ElementAt(i).Key.ElementAt(dataset.width - 1) == null)
                     continue;
                 else
@@ -604,6 +602,7 @@ namespace Zadanie2
                 else
                     return width;
             }
+            //-----------------------------------------------
 
             //Wypełnianie tablicy wartościami atrybutów:
             public void FillArray()
@@ -724,21 +723,33 @@ namespace Zadanie2
                 }
                 fs.Close();
             }
+            //------------------------------------------------
+
 
             //Wypisywanie tablicy:
             public void WriteArray()
             {
-                for (int i = 0; i < this.values.GetLength(0); i++)
+                for (int i = 0; i < length; i++)
                 {
-                    for (int j = 0; j < this.values.GetLength(1); j++)
+                    if(i==5)
                     {
-                        if (values[i, j] == null)
-                            continue;
-                        Console.Write(this.values[i, j] + " ");
+                        for (int j = 0; j < width; j++)
+                             Console.Write("..  ");
+                        Console.Write("\n");
+                        for (int j = 0; j < width; j++)
+                             Console.Write("..  ");
+                        i = length - 6;
+                    }
+                    else
+                    {
+                        for (int j = 0; j < width; j++)
+                            Console.Write(this.values[i, j] + "  ");
                     }
                     Console.Write("\n");
                 }
             }
+            //------------------------------------
+
             //Plik konfiguracyjny:
             public void Config(int down, int up)
             {
@@ -879,7 +890,6 @@ namespace Zadanie2
 
                 var min = tab1.Min();
                 var max = tab1.Max();
-                Console.WriteLine("min==" + min + "  max==" + max);
                 for (int j = 0; j < length; j++)
                 {
                     if (tab[j, 0] == null)
@@ -889,7 +899,7 @@ namespace Zadanie2
                     if (tab[j, 0].ToString() == "")
                         continue;
                     else
-                        tab[j, 0] = Math.Round((((double)tab[j, 0] - (double)min) / ((double)max - (double)min) * (up - down)) + down, 4);
+                        tab[j, 0] = (((double)tab[j, 0] - (double)min) / ((double)max - (double)min) * (up - down)) + down;
                 }
                 for (int j = 0; j < length; j++)
                 {

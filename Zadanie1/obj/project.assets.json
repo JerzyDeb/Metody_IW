@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\PROJEKTY\\Metody_IW\\Zadanie1\\Zadanie1.csproj",
+      "projectUniqueName": "C:\\Projects\\Metody_IW\\Zadanie1\\Zadanie1.csproj",
       "projectName": "Zadanie1",
-      "projectPath": "C:\\PROJEKTY\\Metody_IW\\Zadanie1\\Zadanie1.csproj",
+      "projectPath": "C:\\Projects\\Metody_IW\\Zadanie1\\Zadanie1.csproj",
       "packagesPath": "C:\\Users\\Jurek\\.nuget\\packages\\",
-      "outputPath": "C:\\PROJEKTY\\Metody_IW\\Zadanie1\\obj\\",
+      "outputPath": "C:\\Projects\\Metody_IW\\Zadanie1\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Jurek\\AppData\\Roaming\\NuGet\\NuGet.Config",

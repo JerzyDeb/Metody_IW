@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
-using System.Collections;
 
 namespace Zadanie1
 {
@@ -72,16 +71,21 @@ namespace Zadanie1
 
             Console.Write("\rPodaj górną granicę przedziału:");
             int up = int.Parse(Console.ReadLine());
+            Console.Clear();
 
             file.FillArray();
             file.ChangeType();
-            Console.WriteLine("Oto Twoje dane: ");
+            Console.WriteLine("Nazwa pliku: " + file.name + " Ilość rekordów:" + file.length + " Ilość atrybutów: " + file.width);
+            Console.WriteLine("\nDane przed normalizacją: ");
             file.WriteArray();
 
+            Console.WriteLine("\nKliknij dowolny przycisk aby rozpocząć normalizację...");
             Console.ReadKey();
+            Console.Clear();
             file.Config(down, up);
-
-            Console.WriteLine("Nazwa pliku: " + file.name + " Ilość rekordów:" + file.length + " Ilość atrybutów: " + file.width);
+            Console.Clear();
+            Console.WriteLine("Dane po normalizacji: \n");
+            file.WriteArray();
 
             Console.WriteLine("\nW jakim formacie chcesz zachować dane:");
             Console.WriteLine("1 .json");
@@ -89,7 +93,7 @@ namespace Zadanie1
             Console.WriteLine("3 .data");
             Console.WriteLine("4 .csv");
             Console.WriteLine("5 .xml");
-            Console.Write("\r Wpisz liczbę 1-5: ");
+            Console.Write("\rWpisz liczbę 1-5: ");
             string saveas = Console.ReadLine();
 
             if (saveas == "1")
@@ -210,8 +214,8 @@ namespace Zadanie1
             {
                 if (i == list.Count() - 1)
                 {
-                    struktura[i] = list[i][0];
-                    struktura[i + 1] = list[i][1];
+                    struktura[i] = list[i][1];
+                    struktura[i + 1] = list[i][0];
                 }
                 else
                     struktura[i] = list[i][1];
@@ -484,8 +488,20 @@ namespace Zadanie1
             {
                 for (int i = 0; i < length; i++)
                 {
-                    for (int j = 0; j < width; j++)
-                        Console.Write(this.values[i, j] + "  ");
+                    if(i==5)
+                    {
+                        for (int j = 0; j < width; j++)
+                             Console.Write("..  ");
+                        Console.Write("\n");
+                        for (int j = 0; j < width; j++)
+                             Console.Write("..  ");
+                        i = length - 6;
+                    }
+                    else
+                    {
+                        for (int j = 0; j < width; j++)
+                            Console.Write(this.values[i, j] + "  ");
+                    }
                     Console.Write("\n");
                 }
             }
@@ -873,7 +889,6 @@ namespace Zadanie1
 
                 var min = tab1.Min();
                 var max = tab1.Max();
-                Console.WriteLine("min==" + min + "  max==" + max);
                 for (int j = 0; j < length; j++)
                 {
                     if (tab[j, 0] == null)

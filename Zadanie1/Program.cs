@@ -404,10 +404,10 @@ namespace Zadanie1
                                 if (line.Substring(10, 1) == @"""")
                                 {
                                     if (line.Substring(line.Length - 1, 1) == ",")
-                                        this.values[i, k] = line.Substring(11, line.Length - 13);       
+                                        this.values[i, k] = line.Substring(11, line.Length - 13);
                                     else
                                         this.values[i, k] = line.Substring(11, line.Length - 12);
-                                    
+
                                 }
                                 else
                                 {
@@ -488,13 +488,13 @@ namespace Zadanie1
             {
                 for (int i = 0; i < length; i++)
                 {
-                    if(i==5)
+                    if (i == 5)
                     {
                         for (int j = 0; j < width; j++)
-                             Console.Write("..  ");
+                            Console.Write("..  ");
                         Console.Write("\n");
                         for (int j = 0; j < width; j++)
-                             Console.Write("..  ");
+                            Console.Write("..  ");
                         i = length - 6;
                     }
                     else
@@ -711,20 +711,15 @@ namespace Zadanie1
             //Plik konfiguracyjny:
             public void Config(int down, int up)
             {
+                Console.Write("\r\nCzy chcesz znormalizować wszystkie kolumny? (T/N): ");
+                string dec = Console.ReadLine();
+
                 for (int i = 0; i < width - 1; i++)
                 {
                     //Jeżeli wartości w kolumnie są liczbami:
                     if (values[0, i].GetType() == typeof(System.Double) || values[0, i].GetType() == typeof(System.Int32))
                     {
-
-                        Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu liczbowego. Co chcesz zrobić z danymi w tej kolumnie?");
-                        Console.WriteLine("1) Znormalizować");
-                        Console.WriteLine("2) Zostawić bez zmian");
-                        Console.WriteLine("3) Usunąć");
-                        Console.Write("\r\nWybierz opcję: ");
-                        int decision = int.Parse(Console.ReadLine());
-
-                        if (decision == 1)
+                        if (dec == "T" || dec == "t")
                         {
                             object[,] tab = new object[length, 1];
 
@@ -737,26 +732,9 @@ namespace Zadanie1
                             }
                             Normalise(down, up, tab, i);
                         }
-                        if (decision == 2)
-                        {
-                            continue;
-                        }
-                        if (decision == 3)
-                        {
-                            for (int j = 0; j < length; j++)
-                                values[j, i] = null;
-                            continue;
-                        }
-
-                    }
-                    //Jeżeli wartości w kolumnie są tekstem:
-                    if (values[0, i].GetType() == typeof(System.String))
-                    {
-                        if (values[0, i].ToString() == "null")
-                            continue;
                         else
                         {
-                            Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu tekstowego. Co chcesz zrobić z danymi w tej kolumnie?");
+                            Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu liczbowego. Co chcesz zrobić z danymi w tej kolumnie?");
                             Console.WriteLine("1) Znormalizować");
                             Console.WriteLine("2) Zostawić bez zmian");
                             Console.WriteLine("3) Usunąć");
@@ -765,8 +743,7 @@ namespace Zadanie1
 
                             if (decision == 1)
                             {
-                                int size = 0; //Ilość wartości w kolumnie
-                                object[,] tab = new object[length, 1]; //Tablica wartości w danej kolumnie
+                                object[,] tab = new object[length, 1];
 
                                 for (int j = 0; j < length; j++)
                                 {
@@ -775,69 +752,8 @@ namespace Zadanie1
                                     else
                                         tab[j, 0] = values[j, i];
                                 }
-
-                                for (int k = 0; k < length; k++)
-                                {
-                                    if (values[k, i] == null)
-                                        continue;
-                                    else
-                                        size++;
-                                }
-
-                                object[] wartosci = new object[size];//Kolumna zawierająca wartości z kolumny bez wartości null
-
-                                int index = 0;
-                                int index1 = 0;
-
-                                for (int l = 0; l < length; l++)
-                                {
-                                    if (values[l, i] == null)
-                                        continue;
-                                    else
-                                    {
-                                        wartosci[index] = values[l, i];
-                                        index++;
-                                    }
-                                }
-
-                                object[] dist = wartosci.Distinct().ToArray();//Wartości w kolumnie bez powtórzeń
-                                object[] ilosc = new object[dist.GetLength(0)];//Ilość danej wartości
-
-                                foreach (string item in dist)
-                                {
-                                    double c = 0;
-                                    foreach (string item1 in wartosci)
-                                    {
-                                        if (item == item1)
-                                            c++;
-                                    }
-                                    ilosc[index1] = c;
-                                    index1++;
-                                }
-
-                                var dictionary = new Dictionary<string, double>(wartosci.GetLength(0));//Słownik - tekst(Key),Występowanie(Value)
-
-                                for (int m = 0; m < ilosc.GetLength(0); m++)
-                                    dictionary.Add(dist[m].ToString(), (double)ilosc[m]);
-
-                                var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;//Sortowanie według value
-
-                                for (int n = 0; n < length; n++)
-                                {
-                                    if (tab[n, 0] == null)
-                                        continue;
-                                    else
-                                    {
-                                        for (int o = 0; o < dist.GetLength(0); o++)
-                                        {
-                                            if (tab[n, 0].ToString() == sortedDict.ElementAt(o).Key)
-                                                tab[n, 0] = (double)o;
-                                        }
-                                    }
-                                }
                                 Normalise(down, up, tab, i);
                             }
-
                             if (decision == 2)
                             {
                                 continue;
@@ -846,6 +762,186 @@ namespace Zadanie1
                             {
                                 for (int j = 0; j < length; j++)
                                     values[j, i] = null;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Jeżeli wartości w kolumnie są tekstem:
+                    if (values[0, i].GetType() == typeof(System.String))
+                    {
+                        if (dec == "T" || dec == "t")
+                        {
+                            int size = 0; //Ilość wartości w kolumnie
+                            object[,] tab = new object[length, 1]; //Tablica wartości w danej kolumnie
+
+                            for (int j = 0; j < length; j++)
+                            {
+                                if (values[j, i] == null)
+                                    tab[j, 0] = null;
+                                else
+                                    tab[j, 0] = values[j, i];
+                            }
+
+                            for (int k = 0; k < length; k++)
+                            {
+                                if (values[k, i] == null)
+                                    continue;
+                                else
+                                    size++;
+                            }
+
+                            object[] wartosci = new object[size];//Kolumna zawierająca wartości z kolumny bez wartości null
+
+                            int index = 0;
+                            int index1 = 0;
+
+                            for (int l = 0; l < length; l++)
+                            {
+                                if (values[l, i] == null)
+                                    continue;
+                                else
+                                {
+                                    wartosci[index] = values[l, i];
+                                    index++;
+                                }
+                            }
+
+                            object[] dist = wartosci.Distinct().ToArray();//Wartości w kolumnie bez powtórzeń
+                            object[] ilosc = new object[dist.GetLength(0)];//Ilość danej wartości
+
+                            foreach (string item in dist)
+                            {
+                                double c = 0;
+                                foreach (string item1 in wartosci)
+                                {
+                                    if (item == item1)
+                                        c++;
+                                }
+                                ilosc[index1] = c;
+                                index1++;
+                            }
+
+                            var dictionary = new Dictionary<string, double>(wartosci.GetLength(0));//Słownik - tekst(Key),Występowanie(Value)
+
+                            for (int m = 0; m < ilosc.GetLength(0); m++)
+                                dictionary.Add(dist[m].ToString(), (double)ilosc[m]);
+
+                            var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;//Sortowanie według value
+
+                            for (int n = 0; n < length; n++)
+                            {
+                                if (tab[n, 0] == null)
+                                    continue;
+                                else
+                                {
+                                    for (int o = 0; o < dist.GetLength(0); o++)
+                                    {
+                                        if (tab[n, 0].ToString() == sortedDict.ElementAt(o).Key)
+                                            tab[n, 0] = (double)o;
+                                    }
+                                }
+                            }
+                            Normalise(down, up, tab, i);
+                        }
+
+                        else
+                        {
+                            if (values[0, i].ToString() == "null")
+                                continue;
+                            else
+                            {
+                                Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu tekstowego. Co chcesz zrobić z danymi w tej kolumnie?");
+                                Console.WriteLine("1) Znormalizować");
+                                Console.WriteLine("2) Zostawić bez zmian");
+                                Console.WriteLine("3) Usunąć");
+                                Console.Write("\r\nWybierz opcję: ");
+                                int decision = int.Parse(Console.ReadLine());
+
+                                if (decision == 1)
+                                {
+                                    int size = 0; //Ilość wartości w kolumnie
+                                    object[,] tab = new object[length, 1]; //Tablica wartości w danej kolumnie
+
+                                    for (int j = 0; j < length; j++)
+                                    {
+                                        if (values[j, i] == null)
+                                            tab[j, 0] = null;
+                                        else
+                                            tab[j, 0] = values[j, i];
+                                    }
+
+                                    for (int k = 0; k < length; k++)
+                                    {
+                                        if (values[k, i] == null)
+                                            continue;
+                                        else
+                                            size++;
+                                    }
+
+                                    object[] wartosci = new object[size];//Kolumna zawierająca wartości z kolumny bez wartości null
+
+                                    int index = 0;
+                                    int index1 = 0;
+
+                                    for (int l = 0; l < length; l++)
+                                    {
+                                        if (values[l, i] == null)
+                                            continue;
+                                        else
+                                        {
+                                            wartosci[index] = values[l, i];
+                                            index++;
+                                        }
+                                    }
+
+                                    object[] dist = wartosci.Distinct().ToArray();//Wartości w kolumnie bez powtórzeń
+                                    object[] ilosc = new object[dist.GetLength(0)];//Ilość danej wartości
+
+                                    foreach (string item in dist)
+                                    {
+                                        double c = 0;
+                                        foreach (string item1 in wartosci)
+                                        {
+                                            if (item == item1)
+                                                c++;
+                                        }
+                                        ilosc[index1] = c;
+                                        index1++;
+                                    }
+
+                                    var dictionary = new Dictionary<string, double>(wartosci.GetLength(0));//Słownik - tekst(Key),Występowanie(Value)
+
+                                    for (int m = 0; m < ilosc.GetLength(0); m++)
+                                        dictionary.Add(dist[m].ToString(), (double)ilosc[m]);
+
+                                    var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;//Sortowanie według value
+
+                                    for (int n = 0; n < length; n++)
+                                    {
+                                        if (tab[n, 0] == null)
+                                            continue;
+                                        else
+                                        {
+                                            for (int o = 0; o < dist.GetLength(0); o++)
+                                            {
+                                                if (tab[n, 0].ToString() == sortedDict.ElementAt(o).Key)
+                                                    tab[n, 0] = (double)o;
+                                            }
+                                        }
+                                    }
+                                    Normalise(down, up, tab, i);
+                                }
+
+                                if (decision == 2)
+                                {
+                                    continue;
+                                }
+                                if (decision == 3)
+                                {
+                                    for (int j = 0; j < length; j++)
+                                        values[j, i] = null;
+                                }
                             }
                         }
                     }

@@ -39,7 +39,6 @@ namespace Zadanie2
             Console.WriteLine("Nazwa pliku: " + dataset.name + " Ilość rekordów:" + dataset.length + " Ilość atrybutów: " + dataset.width);
             Console.WriteLine("\nTwoje dane: ");
             dataset.WriteArray();
-
             Console.WriteLine("\nKNN - Co chcesz zrobić: ");
             Console.WriteLine("1) Dopasuj próbkę do zestawu próbek wzorcowych");
             Console.WriteLine("2) Jeden kontra reszta");
@@ -73,17 +72,41 @@ namespace Zadanie2
             Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
             int p = int.Parse(Console.ReadLine());
 
-            //Generowanie losowego rekordu:
-            Console.Clear();
-            Console.WriteLine("Kliknij dowolny przycisk aby wygenerować losowy rekord...");
-            Console.ReadKey();
-
+            Console.WriteLine("Chcesz wprowadzić wartości atrybutów ręcznie czy wygenerować je losowo?");
+            Console.WriteLine("1) Ręcznie");
+            Console.WriteLine("2) Losowo");
             object[] record = new object[dataset.width];
-            Random random = new Random();
-            for (int i = 0; i < record.GetLength(0) - 1; i++)
+
+            Console.Write("\r\nWybierz opcję (1-2): ");
+            int dec = int.Parse(Console.ReadLine());
+
+            if (dec == 1)
             {
-                record[i] = random.NextDouble();
-                record[i] = Math.Round((double)record[i], 3);
+                Console.Clear();
+                for (int i = 0; i < dataset.width - 1; i++)
+                {
+                    Console.Write("\n\rPodaj wartość " + i + ". atrybutu z przedziału 0-1: ");
+                    double wart = Convert.ToDouble(Console.ReadLine());
+                    if (wart > 1)
+                        wart = 1;
+                    if (wart < 0)
+                        wart = 0;
+                    record[i] = wart;
+                }
+            }
+            else
+            {
+                //Generowanie losowego rekordu:
+                Console.Clear();
+                Console.WriteLine("Kliknij dowolny przycisk aby wygenerować losowy rekord...");
+                Console.ReadKey();
+
+                Random random = new Random();
+                for (int i = 0; i < record.GetLength(0) - 1; i++)
+                {
+                    record[i] = random.NextDouble();
+                    record[i] = Math.Round((double)record[i], 3);
+                }
             }
 
             Console.Clear();
@@ -108,9 +131,9 @@ namespace Zadanie2
             int sposob = int.Parse(Console.ReadLine());
 
             if (sposob == 1)
-                record[record.GetLength(0) - 1] = sposob1(k, metryka, record, dataset,p);
+                record[record.GetLength(0) - 1] = sposob1(k, metryka, record, dataset, p);
             if (sposob == 2)
-                record[record.GetLength(0) - 1] = sposob2(k, metryka, record, dataset,p);
+                record[record.GetLength(0) - 1] = sposob2(k, metryka, record, dataset, p);
 
             //Przypisanie klasy decyzyjnej do wygenerowanego rekordu:
             if (record[record.GetLength(0) - 1] == null)
@@ -154,8 +177,6 @@ namespace Zadanie2
             Console.Write("\r\nWybierz sposób (1-2): ");
             int sposob = int.Parse(Console.ReadLine());
 
-
-
             object[][] records = new object[dataset.length][];
             int poprawnosc = 0;
             int nieudane = 0;
@@ -183,15 +204,15 @@ namespace Zadanie2
             }
             Console.Clear();
             Console.Write("Pracuję nad tym...");
-            Parallel.For(0,records.GetLength(0),i=>
+            Parallel.For(0, records.GetLength(0), i =>
             {
                 object[] tab0 = new object[dataset.width];
-                for (int j = 0; j < dataset.width; j++)
+                for (int j = 0; j < dataset.width - 1; j++)
                 {
-                    if (j == dataset.width - 1)
+                    if (records[i][j] == null)
                         tab0[j] = null;
                     else
-                        tab0[j] = records[i][j];
+                        tab0[j] = (double)records[i][j];
                 }
                 if (sposob == 1)
                 {
@@ -203,7 +224,6 @@ namespace Zadanie2
                     }
                     if (tab0[tab0.GetLength(0) - 1].ToString() == records[i][records[i].GetLength(0) - 1].ToString())
                         poprawnosc++;
-
                 }
                 if (sposob == 2)
                 {
@@ -217,17 +237,16 @@ namespace Zadanie2
                         poprawnosc++;
                 }
             });
-
             Console.Clear();
-            Console.WriteLine("Ilość rekordów: "+ilosc+"\nUdana klasyfikacja: "+(ilosc-nieudane)+"\nNieudana klasyfikacja: " + nieudane + "\nPoprawnie sklasyfikowano: "+poprawnosc+"\nPoprawność knn wynosi: " + (double)poprawnosc / ilosc * 100 + "%");
+            Console.WriteLine("Ilość rekordów: " + ilosc + "\nUdana klasyfikacja: " + (ilosc - nieudane) + "\nNieudana klasyfikacja: " + nieudane + "\nPoprawnie sklasyfikowano: " + poprawnosc + "\nPoprawność knn wynosi: " + (double)poprawnosc / ilosc * 100 + "%");
             Console.ReadKey();
 
         }
         //---------------------------------------------
-        private static object sposob1(int k, int metryka, object[] record, Base dataset,int p)
+        private static object sposob1(int k, int metryka, object[] record, Base dataset, int p)
         {
             //Dodawanie do słownika każdego rekordu (Klucza) oraz odległości do wygenerowanego rekordu (Wartości):
-            var dictionary = CreateDictionary(record, metryka, dataset,p);
+            var dictionary = CreateDictionary(record, metryka, dataset, p);
 
             //Posortowany słownik weług odległości rosnąco:
             var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;
@@ -269,10 +288,10 @@ namespace Zadanie2
             else
                 return wartoscisorted.ElementAt(0).Key;
         }
-        private static object sposob2(int k, int metryka, object[] record, Base dataset,int p)
+        private static object sposob2(int k, int metryka, object[] record, Base dataset, int p)
         {
             //Dodawanie do słownika każdego rekordu (Klucza) oraz odległości do wygenerowanego rekordu (Wartości):
-            var dictionary = CreateDictionary(record, metryka, dataset,p);
+            var dictionary = CreateDictionary(record, metryka, dataset, p);
 
             //Posortowany słownik według klasy decyzyjnej oraz odległości rosnąco:
             var sortedDict = from entry in dictionary orderby entry.Key.ElementAt(dataset.width - 1), entry.Value ascending select entry;
@@ -335,7 +354,7 @@ namespace Zadanie2
 
         }
 
-        private static Dictionary<object[], double> CreateDictionary(object[] record, int metryka, Base dataset,int p)
+        private static Dictionary<object[], double> CreateDictionary(object[] record, int metryka, Base dataset, int p)
         {
             var dictionary = new Dictionary<object[], double>(dataset.values.GetLength(0));
 
@@ -392,7 +411,7 @@ namespace Zadanie2
                     if (metryka == 3)
                         dictionary.Add(tab, MetricCzebyszew(record1, tab));
                     if (metryka == 4)
-                        dictionary.Add(tab, MetricMinkowski(record1, tab,p));
+                        dictionary.Add(tab, MetricMinkowski(record1, tab, p));
                     if (metryka == 5)
                         dictionary.Add(tab, MetricLogarytm(record1, tab));
                 }
@@ -404,12 +423,10 @@ namespace Zadanie2
             double sum = 0;
             for (int i = 0; i < tab1.GetLength(0) - 1; i++)
             {
-                if (tab1[i] == null)
-                    continue;
-                if (tab2[i] == null)
+                if (tab1[i] == null || tab2[i] == null)
                     continue;
                 else
-                    sum += Math.Abs((double)tab2[i] - (double)tab1[i]);
+                    sum += Math.Abs(((double)tab2[i] - (double)tab1[i]));
             }
             return sum;
         }
@@ -731,13 +748,13 @@ namespace Zadanie2
             {
                 for (int i = 0; i < length; i++)
                 {
-                    if(i==5)
+                    if (i == 5)
                     {
                         for (int j = 0; j < width; j++)
-                             Console.Write("..  ");
+                            Console.Write("..  ");
                         Console.Write("\n");
                         for (int j = 0; j < width; j++)
-                             Console.Write("..  ");
+                            Console.Write("..  ");
                         i = length - 6;
                     }
                     else

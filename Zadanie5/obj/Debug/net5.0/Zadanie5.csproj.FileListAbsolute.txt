@@ -1,0 +1,16 @@
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.exe
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.deps.json
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.runtimeconfig.json
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.runtimeconfig.dev.json
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.dll
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\ref\Zadanie5.dll
+C:\Projects\Metody_IW\Zadanie5\bin\Debug\net5.0\Zadanie5.pdb
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.csprojAssemblyReference.cache
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.AssemblyInfoInputs.cache
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.AssemblyInfo.cs
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.csproj.CoreCompileInputs.cache
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.dll
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\ref\Zadanie5.dll
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.pdb
+C:\Projects\Metody_IW\Zadanie5\obj\Debug\net5.0\Zadanie5.genruntimeconfig.cache

@@ -1,0 +1,1 @@
+Dodano opcję wyboru zaczynającego gracza

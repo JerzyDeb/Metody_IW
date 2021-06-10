@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
+using System.Configuration;
 
 namespace Zadanie1
 {
@@ -20,18 +21,55 @@ namespace Zadanie1
         }
         private static bool MainMenu()
         {
+            DirectoryInfo d = new DirectoryInfo(@"./pliki");
+            FileInfo[] Files = d.GetFiles();
+
+            Console.Clear();
+            foreach (FileInfo plik in Files)
+                Console.WriteLine("- " + plik.Name);
+
+            Console.Write("\r\nWybierz dataset, na którym chcesz bazować: ");
+            string choose = Console.ReadLine();
+            Base file = new Base(choose);
+            file.FillArray();
+            file.ChangeType();
             Console.Clear();
             Console.WriteLine("Co chcesz zrobić: ");
-            Console.WriteLine("1) Normalizowanie danych z pliku");
+            Console.WriteLine("0) Tworzenie pliku konfiguracyjnego");
+            Console.WriteLine("1) Normalizowanie danych na podstawie pliku konfiguracyjnego");
             Console.WriteLine("2) Generowanie nowych danych i zapisanie ich do pliku");
             Console.WriteLine("3) Odczytanie z pliku wcześniej wygenerowanych danych wraz ze strukturą");
             Console.WriteLine("4) Wyjście");
             Console.Write("\r\nWybierz opcję: ");
 
+            // using(StreamReader file = new StreamReader(@"./crxConfig.ini")) {  
+            // int counter = 0;  
+            // string ln;  
+
+            // while ((ln = file.ReadLine()) != null) {  
+            // Console.WriteLine(ln);
+            //         for (int i = 0;i<ln.Length())
+            //             counter++;
+            //     }  
+            // file.Close();  
+            // Console.WriteLine("File has {counter} lines.");  
+            // }  
+
+
+
+
+
+
+
+
+
             switch (Console.ReadLine())
             {
+                case "0":
+                    option0(file);
+                    return true;
                 case "1":
-                    option1();
+                    option1(file);
                     return true;
                 case "2":
                     option2();
@@ -46,43 +84,148 @@ namespace Zadanie1
             }
         }
 
-        //Opcja pierwsza:
-        private static void option1()
+        //Opcja zerowa:
+        private static void option0(Base file)
         {
-            DirectoryInfo d = new DirectoryInfo(@"./pliki");
-            FileInfo[] Files = d.GetFiles();
+            List<int> symb = new List<int>();
+            List<int> num = new List<int>();
 
+            for (int i = 0; i < file.width;i++)
+            {
+                if(file.values[0,i].GetType() == typeof(string))
+                    symb.Add(i);
+                if(file.values[0,i].GetType() == typeof(double))
+                    num.Add(i);
+            }
             Console.Clear();
-            foreach (FileInfo plik in Files)
-                Console.WriteLine("- " + plik.Name);
+            Console.Write("\r\nNazwij plik konfiguracyjny: ");
+            string filename = Console.ReadLine();
 
-            Console.Write("\r\nWybierz plik: ");
-            string choose = Console.ReadLine();
-            Base file = new Base(choose);
-            Console.Clear();
-            Console.WriteLine("Program normalizuje dane w następujący sposób:");
-            Console.WriteLine("-Dane typu tekstowego zamieniane są na liczby 1-n w zależności od częstotliwości występowania a następnie do określonego przedziału");
-            Console.WriteLine("-Dane liczbowe zmieniane są do podanego przedziału z dokładnością do 3 miejsca po przecinku\n");
-            Console.Write("\n\rNaciśnij dowolny przycisk akby kontunuować...");
-            Console.ReadKey();
+            if(file.name.Contains("crx"))
+                filename = filename + "Crx.ini";
+
+            if(file.name.Contains("australian"))
+                filename = filename + "Australian.ini";
+
+            if(file.name.Contains("breast"))
+                filename = filename + "BCW.ini";   
+
+            DirectoryInfo x = new DirectoryInfo(@"./plikiKonfiguracyjne");
+            FileInfo[] Files1 = x.GetFiles();
+
+            foreach (FileInfo plik in Files1)
+            {
+                if (plik.Name == filename)
+                    filename = "New" + filename;
+            }
             Console.Clear();
             Console.Write("\rPodaj dolną granicę przedziału:");
             int down = int.Parse(Console.ReadLine());
 
             Console.Write("\rPodaj górną granicę przedziału:");
             int up = int.Parse(Console.ReadLine());
-            Console.Clear();
 
-            file.FillArray();
-            file.ChangeType();
+            Console.Write("\rPodaj, która kolumna my być klasą decyzyjną: ");
+            int dec = int.Parse(Console.ReadLine());
+
+            int[] doNorm = new int[file.values.GetLength(1)];
+            Console.WriteLine("\rPodaj (oddzielając spacją) numery kolumn, które mają być znormalizowane. Pozostaw puste jeżeli chces znormalizować wszystkie kolumny: ");
+            string norm = Console.ReadLine();
+            if(String.IsNullOrEmpty(norm))
+            {
+                for (int i = 0; i < file.values.GetLength(1);i++)
+                {
+                    doNorm[i] = i;
+                }
+            }
+            else
+            {
+                List<int> doNormList = norm.Split(" ").Select(int.Parse).ToList();
+                doNorm = doNormList.ToArray();
+            }
+
+            int[] doUs = new int[] { };
+            Console.WriteLine("\rPodaj (oddzielając spacją) numery kolumn, które mają być usunięte. Pozostaw puste, jeżeli nie chcesz nic usuwać: ");
+            string us = Console.ReadLine();
+            if(String.IsNullOrEmpty(us)==false)
+            {
+                List<int> doUsList = us.Split(" ").Select(int.Parse).ToList();
+                doUs = doUsList.ToArray();
+            }
+
+
+            using (StreamWriter sw = File.CreateText(@"./plikiKonfiguracyjne/" + filename))
+            {
+                if(file.name.Contains("crx"))
+                    sw.WriteLine("[crx - config]");
+                if(file.name.Contains("australian"))
+                    sw.WriteLine("[australian - config]");
+                if(file.name.Contains("breast"))
+                    sw.WriteLine("[breast-cancer-wisconsin - config]");
+                sw.WriteLine("[Informacje o pliku]");
+                sw.WriteLine("Liczba_kolumn=" + file.width);
+                sw.WriteLine("Liczba_wierszy=" + file.length);
+                sw.Write("Kolumny_symboliczne=");
+                foreach(var item in symb)
+                    sw.Write(item + " ");
+                sw.Write("\nKolumny_numeryczne=");
+                foreach(var item in num)
+                    sw.Write(item + " ");
+                sw.WriteLine("\n[Dane wprowadzone przez uzytkownika]");
+                sw.WriteLine("Klasa_decyzyjna=" + dec);
+                sw.WriteLine("Dolny_zakres_normalizacji="+down); 
+                sw.WriteLine("Gorny_zakres_normalizacji="+up);
+                sw.Write("Kolumny_do_normalizacji=");
+                foreach(var item in doNorm)
+                {
+                    sw.Write(item + " ");
+                }
+                sw.Write("\nKolumny_do_usuniecia=");
+                foreach(var item in doUs)
+                {
+                    sw.Write(item + " ");
+                }
+                sw.WriteLine("\n[Informacje o kolumnach]");
+                sw.WriteLine("[Kolumny numeryczne - 'minimum maksimum srednia']");
+                sw.WriteLine("[Kolumny symboliczne - 'znak_ilosc']");
+            }
+            iniFile dane = new iniFile(@"./plikiKonfiguracyjne/"+filename);
+            createConfig.create.write(file.values, dane);
+        }
+        //Opcja pierwsza:
+        private static void option1(Base file)
+        {
+            DirectoryInfo d = new DirectoryInfo(@"./plikiKonfiguracyjne");
+            FileInfo[] Files = d.GetFiles();
+
+            Console.Clear();
+            foreach (FileInfo plik in Files)
+                Console.WriteLine("- " + plik.Name);
+
+            Console.Write("\r\nWybierz plik kongiguracyjny: ");
+            string filename = Console.ReadLine();
+
+            iniFile dane = new iniFile(@"./plikiKonfiguracyjne/"+filename);
+            dane.fillInfoNum(dane.lines);
+            dane.fillInfoSym(dane.lines);
+
+            Console.Clear();
             Console.WriteLine("Nazwa pliku: " + file.name + " Ilość rekordów:" + file.length + " Ilość atrybutów: " + file.width);
             Console.WriteLine("\nDane przed normalizacją: ");
             file.WriteArray();
-
-            Console.WriteLine("\nKliknij dowolny przycisk aby rozpocząć normalizację...");
+            Console.Write("\n\rNaciśnij dowolny przycisk aby kontunuować...");
             Console.ReadKey();
             Console.Clear();
-            file.Config(down, up);
+            Console.WriteLine("Program normalizuje dane w następujący sposób:");
+            Console.WriteLine("-Dane typu tekstowego zamieniane są na liczby 1-n w zależności od częstotliwości występowania a następnie do określonego przedziału");
+            Console.WriteLine("-Dane liczbowe zmieniane są do podanego przedziału z dokładnością do 3 miejsca po przecinku\n");
+            Console.Write("\n\rNaciśnij dowolny przycisk aby rozpocząć normalizację...");
+            Console.ReadKey();
+
+            file.values=checkConfig.check.config(file.values, dane);
+            if(file.values==null)
+                return;
+           
             Console.Clear();
             Console.WriteLine("Dane po normalizacji: \n");
             file.WriteArray();
@@ -486,20 +629,20 @@ namespace Zadanie1
             //Wypisywanie tablicy:
             public void WriteArray()
             {
-                for (int i = 0; i < length; i++)
+                for (int i = 0; i < values.GetLength(0); i++)
                 {
                     if (i == 5)
                     {
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                             Console.Write("..  ");
                         Console.Write("\n");
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                             Console.Write("..  ");
                         i = length - 6;
                     }
                     else
                     {
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                             Console.Write(this.values[i, j] + "  ");
                     }
                     Console.Write("\n");
@@ -528,13 +671,13 @@ namespace Zadanie1
                 {
                     sw.WriteLine("{");
                     sw.WriteLine(@"   ""Dataset"": [");
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < values.GetLength(0); i++)
                     {
                         sw.WriteLine("   {");
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                         {
 
-                            if (j == width - 1)
+                            if (j == values.GetLength(1) - 1)
                             {
                                 if (this.values[i, j] == null)
                                 {
@@ -589,11 +732,11 @@ namespace Zadanie1
                 }
                 using (StreamWriter sw = File.AppendText(@"./pliki/" + filename))
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < values.GetLength(0); i++)
                     {
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j <values.GetLength(1); j++)
                         {
-                            if (j == (this.width - 1))
+                            if (j == (values.GetLength(1) - 1))
                                 sw.Write(this.values[i, j] + "\n");
                             else
                                 sw.Write(this.values[i, j] + ",");
@@ -622,11 +765,11 @@ namespace Zadanie1
                 }
                 using (StreamWriter sw = File.AppendText(@"./pliki/" + filename))
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < values.GetLength(0); i++)
                     {
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                         {
-                            if (j == (this.width - 1))
+                            if (j == (this.values.GetLength(1) - 1))
                                 sw.Write(this.values[i, j] + "\n");
                             else
                                 sw.Write(this.values[i, j] + " ");
@@ -655,11 +798,11 @@ namespace Zadanie1
                 }
                 using (StreamWriter sw = File.AppendText(@"./pliki/" + filename))
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < values.GetLength(0); i++)
                     {
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j < values.GetLength(1); j++)
                         {
-                            if (j == (this.width - 1))
+                            if (j == (values.GetLength(1) - 1))
                                 sw.Write(this.values[i, j] + "\n");
                             else
                                 sw.Write(this.values[i, j] + ",");
@@ -690,11 +833,11 @@ namespace Zadanie1
                 {
                     sw.WriteLine("<?xml version=" + @"""1.0"" encoding=" + @"""utf-8"" ?>");
                     sw.WriteLine("<dataset>");
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < values.GetLength(0); i++)
                     {
                         sw.WriteLine("   <data>");
                         sw.WriteLine("      <" + i + ">");
-                        for (int j = 0; j < width; j++)
+                        for (int j = 0; j <values.GetLength(1); j++)
                         {
                             sw.Write("         <" + j + ">");
                             sw.Write(this.values[i, j]);
@@ -707,304 +850,6 @@ namespace Zadanie1
                 }
             }
             //----------------------------------------------------------------
-
-            //Plik konfiguracyjny:
-            public void Config(int down, int up)
-            {
-                Console.Write("\r\nCzy chcesz znormalizować wszystkie kolumny? (T/N): ");
-                string dec = Console.ReadLine();
-
-                for (int i = 0; i < width - 1; i++)
-                {
-                    //Jeżeli wartości w kolumnie są liczbami:
-                    if (values[0, i].GetType() == typeof(System.Double) || values[0, i].GetType() == typeof(System.Int32))
-                    {
-                        if (dec == "T" || dec == "t")
-                        {
-                            object[,] tab = new object[length, 1];
-
-                            for (int j = 0; j < length; j++)
-                            {
-                                if (values[j, i] == null)
-                                    tab[j, 0] = null;
-                                else
-                                    tab[j, 0] = values[j, i];
-                            }
-                            Normalise(down, up, tab, i);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu liczbowego. Co chcesz zrobić z danymi w tej kolumnie?");
-                            Console.WriteLine("1) Znormalizować");
-                            Console.WriteLine("2) Zostawić bez zmian");
-                            Console.WriteLine("3) Usunąć");
-                            Console.Write("\r\nWybierz opcję: ");
-                            int decision = int.Parse(Console.ReadLine());
-
-                            if (decision == 1)
-                            {
-                                object[,] tab = new object[length, 1];
-
-                                for (int j = 0; j < length; j++)
-                                {
-                                    if (values[j, i] == null)
-                                        tab[j, 0] = null;
-                                    else
-                                        tab[j, 0] = values[j, i];
-                                }
-                                Normalise(down, up, tab, i);
-                            }
-                            if (decision == 2)
-                            {
-                                continue;
-                            }
-                            if (decision == 3)
-                            {
-                                for (int j = 0; j < length; j++)
-                                    values[j, i] = null;
-                                continue;
-                            }
-
-                        }
-                    }
-                    //Jeżeli wartości w kolumnie są tekstem:
-                    if (values[0, i].GetType() == typeof(System.String))
-                    {
-                        if (dec == "T" || dec == "t")
-                        {
-                            int size = 0; //Ilość wartości w kolumnie
-                            object[,] tab = new object[length, 1]; //Tablica wartości w danej kolumnie
-
-                            for (int j = 0; j < length; j++)
-                            {
-                                if (values[j, i] == null)
-                                    tab[j, 0] = null;
-                                else
-                                    tab[j, 0] = values[j, i];
-                            }
-
-                            for (int k = 0; k < length; k++)
-                            {
-                                if (values[k, i] == null)
-                                    continue;
-                                else
-                                    size++;
-                            }
-
-                            object[] wartosci = new object[size];//Kolumna zawierająca wartości z kolumny bez wartości null
-
-                            int index = 0;
-                            int index1 = 0;
-
-                            for (int l = 0; l < length; l++)
-                            {
-                                if (values[l, i] == null)
-                                    continue;
-                                else
-                                {
-                                    wartosci[index] = values[l, i];
-                                    index++;
-                                }
-                            }
-
-                            object[] dist = wartosci.Distinct().ToArray();//Wartości w kolumnie bez powtórzeń
-                            object[] ilosc = new object[dist.GetLength(0)];//Ilość danej wartości
-
-                            foreach (string item in dist)
-                            {
-                                double c = 0;
-                                foreach (string item1 in wartosci)
-                                {
-                                    if (item == item1)
-                                        c++;
-                                }
-                                ilosc[index1] = c;
-                                index1++;
-                            }
-
-                            var dictionary = new Dictionary<string, double>(wartosci.GetLength(0));//Słownik - tekst(Key),Występowanie(Value)
-
-                            for (int m = 0; m < ilosc.GetLength(0); m++)
-                                dictionary.Add(dist[m].ToString(), (double)ilosc[m]);
-
-                            var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;//Sortowanie według value
-
-                            for (int n = 0; n < length; n++)
-                            {
-                                if (tab[n, 0] == null)
-                                    continue;
-                                else
-                                {
-                                    for (int o = 0; o < dist.GetLength(0); o++)
-                                    {
-                                        if (tab[n, 0].ToString() == sortedDict.ElementAt(o).Key)
-                                            tab[n, 0] = (double)o;
-                                    }
-                                }
-                            }
-                            Normalise(down, up, tab, i);
-                        }
-
-                        else
-                        {
-                            if (values[0, i].ToString() == "null")
-                                continue;
-                            else
-                            {
-                                Console.WriteLine("Dane w kolumnie nr '" + i + "' są typu tekstowego. Co chcesz zrobić z danymi w tej kolumnie?");
-                                Console.WriteLine("1) Znormalizować");
-                                Console.WriteLine("2) Zostawić bez zmian");
-                                Console.WriteLine("3) Usunąć");
-                                Console.Write("\r\nWybierz opcję: ");
-                                int decision = int.Parse(Console.ReadLine());
-
-                                if (decision == 1)
-                                {
-                                    int size = 0; //Ilość wartości w kolumnie
-                                    object[,] tab = new object[length, 1]; //Tablica wartości w danej kolumnie
-
-                                    for (int j = 0; j < length; j++)
-                                    {
-                                        if (values[j, i] == null)
-                                            tab[j, 0] = null;
-                                        else
-                                            tab[j, 0] = values[j, i];
-                                    }
-
-                                    for (int k = 0; k < length; k++)
-                                    {
-                                        if (values[k, i] == null)
-                                            continue;
-                                        else
-                                            size++;
-                                    }
-
-                                    object[] wartosci = new object[size];//Kolumna zawierająca wartości z kolumny bez wartości null
-
-                                    int index = 0;
-                                    int index1 = 0;
-
-                                    for (int l = 0; l < length; l++)
-                                    {
-                                        if (values[l, i] == null)
-                                            continue;
-                                        else
-                                        {
-                                            wartosci[index] = values[l, i];
-                                            index++;
-                                        }
-                                    }
-
-                                    object[] dist = wartosci.Distinct().ToArray();//Wartości w kolumnie bez powtórzeń
-                                    object[] ilosc = new object[dist.GetLength(0)];//Ilość danej wartości
-
-                                    foreach (string item in dist)
-                                    {
-                                        double c = 0;
-                                        foreach (string item1 in wartosci)
-                                        {
-                                            if (item == item1)
-                                                c++;
-                                        }
-                                        ilosc[index1] = c;
-                                        index1++;
-                                    }
-
-                                    var dictionary = new Dictionary<string, double>(wartosci.GetLength(0));//Słownik - tekst(Key),Występowanie(Value)
-
-                                    for (int m = 0; m < ilosc.GetLength(0); m++)
-                                        dictionary.Add(dist[m].ToString(), (double)ilosc[m]);
-
-                                    var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;//Sortowanie według value
-
-                                    for (int n = 0; n < length; n++)
-                                    {
-                                        if (tab[n, 0] == null)
-                                            continue;
-                                        else
-                                        {
-                                            for (int o = 0; o < dist.GetLength(0); o++)
-                                            {
-                                                if (tab[n, 0].ToString() == sortedDict.ElementAt(o).Key)
-                                                    tab[n, 0] = (double)o;
-                                            }
-                                        }
-                                    }
-                                    Normalise(down, up, tab, i);
-                                }
-
-                                if (decision == 2)
-                                {
-                                    continue;
-                                }
-                                if (decision == 3)
-                                {
-                                    for (int j = 0; j < length; j++)
-                                        values[j, i] = null;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            //----------------------------------------------------------------
-
-            //Normalizowanie danych:
-            public void Normalise(int down, int up, object[,] tab, int col)
-            {
-                int index1 = 0;
-                int size1 = 0;
-
-                for (int j = 0; j < tab.GetLength(0); j++)
-                {
-                    if (tab[j, 0] == null)
-                        continue;
-                    if (tab[j, 0].GetType() == typeof(System.String))
-                        continue;
-                    if (tab[j, 0].ToString() == "")
-                        continue;
-                    else
-                        size1++;
-                }
-                object[] tab1 = new object[size1];
-
-                for (int j = 0; j < tab.GetLength(0); j++)
-                {
-                    if (tab[j, 0] == null)
-                        continue;
-                    if (tab[j, 0].GetType() == typeof(System.String))
-                        continue;
-                    if (tab[j, 0].ToString() == "")
-                        continue;
-                    else
-                    {
-                        tab1[index1] = tab[j, 0];
-                        index1++;
-                    }
-                }
-
-                var min = tab1.Min();
-                var max = tab1.Max();
-                for (int j = 0; j < length; j++)
-                {
-                    if (tab[j, 0] == null)
-                        continue;
-                    if (tab[j, 0].GetType() == typeof(System.String))
-                        continue;
-                    if (tab[j, 0].ToString() == "")
-                        continue;
-                    else
-                        tab[j, 0] = System.Math.Round((((double)tab[j, 0] - (double)min) / ((double)max - (double)min) * (up - down)) + down, 3);
-                }
-                for (int j = 0; j < length; j++)
-                {
-                    if (tab[j, 0] == null)
-                        values[j, col] = null;
-                    else
-                        values[j, col] = tab[j, 0];
-                }
-            }
-            //--------------------------------------------------
         }
     }
 }

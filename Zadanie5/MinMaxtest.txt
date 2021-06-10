@@ -1,0 +1,26 @@
+digraph G {
+"id:0\nprot;\n0\nwynik=1"->"id:1\nant;\n5\nwynik=-1"[label = 5];
+"id:0\nprot;\n0\nwynik=1"->"id:2\nant;\n6\nwynik=0"[label = 6];
+"id:0\nprot;\n0\nwynik=1"->"id:3\nant;\n7\nwynik=1"[label = 7color="red"];
+"id:0\nprot;\n0\nwynik=1"->"id:4\nant;\n8\nwynik=1"[label = 8];
+"id:1\nant;\n5\nwynik=-1"->"id:5\nprot;\n10\nwynik=-1"[label = 5color="red"];
+"id:1\nant;\n5\nwynik=-1"->"id:6\nkoniec;\nwynik=0"[label = 6];
+"id:1\nant;\n5\nwynik=-1"->"id:7\nkoniec;\nwynik=1"[label = 7];
+"id:1\nant;\n5\nwynik=-1"->"id:8\nkoniec;\nwynik=1"[label = 8];
+"id:5\nprot;\n10\nwynik=-1"->"id:21\nkoniec;\nwynik=-1"[label = 5color="red"];
+"id:5\nprot;\n10\nwynik=-1"->"id:22\nkoniec;\nwynik=-1"[label = 6];
+"id:5\nprot;\n10\nwynik=-1"->"id:23\nkoniec;\nwynik=-1"[label = 7];
+"id:5\nprot;\n10\nwynik=-1"->"id:24\nkoniec;\nwynik=-1"[label = 8];
+"id:2\nant;\n6\nwynik=0"->"id:9\nkoniec;\nwynik=0"[label = 5color="red"];
+"id:2\nant;\n6\nwynik=0"->"id:10\nkoniec;\nwynik=1"[label = 6];
+"id:2\nant;\n6\nwynik=0"->"id:11\nkoniec;\nwynik=1"[label = 7];
+"id:2\nant;\n6\nwynik=0"->"id:12\nkoniec;\nwynik=1"[label = 8];
+"id:3\nant;\n7\nwynik=1"->"id:13\nkoniec;\nwynik=1"[label = 5color="red"];
+"id:3\nant;\n7\nwynik=1"->"id:14\nkoniec;\nwynik=1"[label = 6];
+"id:3\nant;\n7\nwynik=1"->"id:15\nkoniec;\nwynik=1"[label = 7];
+"id:3\nant;\n7\nwynik=1"->"id:16\nkoniec;\nwynik=1"[label = 8];
+"id:4\nant;\n8\nwynik=1"->"id:17\nkoniec;\nwynik=1"[label = 5color="red"];
+"id:4\nant;\n8\nwynik=1"->"id:18\nkoniec;\nwynik=1"[label = 6];
+"id:4\nant;\n8\nwynik=1"->"id:19\nkoniec;\nwynik=1"[label = 7];
+"id:4\nant;\n8\nwynik=1"->"id:20\nkoniec;\nwynik=1"[label = 8];
+}

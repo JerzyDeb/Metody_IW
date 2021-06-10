@@ -34,7 +34,6 @@ namespace Zadanie2
 
             dataset.FillArray();
             dataset.ChangeType();
-            dataset.Config(0, 1);
             Console.Clear();
             Console.WriteLine("Nazwa pliku: " + dataset.name + " Ilość rekordów:" + dataset.length + " Ilość atrybutów: " + dataset.width);
             Console.WriteLine("\nTwoje dane: ");
@@ -61,93 +60,219 @@ namespace Zadanie2
 
         }
 
-        //Dopasowanie oróbki do reszty:
+        //Dopasowanie próbki do reszty:
         private static void option1(Base dataset)
         {
-
             Console.Clear();
-            Console.Write("\n\rPodaj parametr k: ");
-            int k = int.Parse(Console.ReadLine());
+            Console.WriteLine("0) Utwórz plik konfiguracyjny do przypisania próbki");
+            Console.WriteLine("1) Dopasuj próbkę na podstawie pliku konfiguracyjnego: ");
+            Console.Write("\r\nWybierz opcję: ");
+            int option = int.Parse(Console.ReadLine());
 
-            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
-            int p = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("Chcesz wprowadzić wartości atrybutów ręcznie czy wygenerować je losowo?");
-            Console.WriteLine("1) Ręcznie");
-            Console.WriteLine("2) Losowo");
-            object[] record = new object[dataset.width];
-
-            Console.Write("\r\nWybierz opcję (1-2): ");
-            int dec = int.Parse(Console.ReadLine());
-
-            if (dec == 1)
+            if(option==0)
             {
-                Console.Clear();
-                for (int i = 0; i < dataset.width - 1; i++)
+                List<int> symb = new List<int>();
+                List<int> num = new List<int>();
+
+                for (int i = 0; i < dataset.width;i++)
                 {
-                    Console.Write("\n\rPodaj wartość " + i + ". atrybutu z przedziału 0-1: ");
-                    double wart = Convert.ToDouble(Console.ReadLine());
-                    if (wart > 1)
-                        wart = 1;
-                    if (wart < 0)
-                        wart = 0;
-                    record[i] = wart;
+                    if(dataset.values[0,i].GetType() == typeof(string))
+                        symb.Add(i);
+                    if(dataset.values[0,i].GetType() == typeof(double))
+                        num.Add(i);
                 }
-            }
-            else
-            {
-                //Generowanie losowego rekordu:
                 Console.Clear();
-                Console.WriteLine("Kliknij dowolny przycisk aby wygenerować losowy rekord...");
-                Console.ReadKey();
+                Console.Write("\r\nNazwij plik konfiguracyjny: ");
+                string filename = Console.ReadLine();
 
-                Random random = new Random();
-                for (int i = 0; i < record.GetLength(0) - 1; i++)
+                if(dataset.name.Contains("crx"))
+                    filename = filename + "Crx.ini";
+
+                if(dataset.name.Contains("australian"))
+                    filename = filename + "Australian.ini";
+
+                if(dataset.name.Contains("breast"))
+                    filename = filename + "BCW.ini";   
+
+                DirectoryInfo x = new DirectoryInfo(@"./plikiKonfiguracyjne");
+                FileInfo[] Files1 = x.GetFiles();
+
+                foreach (FileInfo plik in Files1)
                 {
-                    record[i] = random.NextDouble();
-                    record[i] = Math.Round((double)record[i], 3);
+                    if (plik.Name == filename)
+                        filename = "New" + filename;
                 }
+                Console.Clear();
+                Console.Write("\rPodaj, która kolumna my być klasą decyzyjną: ");
+                int dec = int.Parse(Console.ReadLine());
+                Console.Clear();
+                List<object> values = new List<object>(dataset.width);
+                for (int i = 0; i < dataset.width;i++)
+                {
+                    if(i==dec)
+                    {
+                        values.Add("?");
+                        continue;
+                    }
+
+                    for (int j = 0; j < num.Count;j++)
+                    {
+                        if(i==num[j])
+                        {
+                            Console.Write("\n\rPodaj wartość parametru w kolumnie nr." + i + " (typ numeryczny): ");
+                            double war = Convert.ToDouble(Console.ReadLine());
+                            values.Add(war);
+                            break;
+                        }
+                    }
+                    for (int j = 0; j < symb.Count;j++)
+                    {
+                        if(i==symb[j])
+                        {
+                            Console.Write("\n\rPodaj wartość parametru w kolumnie nr." + i + " (typ symboliczny): ");
+                            string war = Console.ReadLine();
+                            values.Add(war);
+                            break;
+                        }
+                    }
+                }
+                Console.Clear();
+
+                Console.Write("\rPodaj dolną granicę przedziału:");
+                int down = int.Parse(Console.ReadLine());
+
+                Console.Write("\rPodaj górną granicę przedziału:");
+                int up = int.Parse(Console.ReadLine());
+
+                int[] doNorm = new int[dataset.values.GetLength(1)];
+                for (int i = 0; i < dataset.values.GetLength(1);i++)
+                    doNorm[i] = i;
+                
+                int[] doUs = new int[] { };
+                Console.WriteLine("\rPodaj (oddzielając spacją) numery kolumn, które mają być usunięte. Pozostaw puste, jeżeli nie chcesz nic usuwać: ");
+                string us = Console.ReadLine();
+                if(String.IsNullOrEmpty(us)==false)
+                {
+                    List<int> doUsList = us.Split(" ").Select(int.Parse).ToList();
+                    doUs = doUsList.ToArray();
+                }
+                Console.Clear();
+
+                Console.Write("\r\nPodaj parametr k: ");
+                int k = int.Parse(Console.ReadLine());
+
+                Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
+                int p = int.Parse(Console.ReadLine());
+                Console.Clear();
+                Console.WriteLine("\n\nWybierz metrykę, którą liczone będą odgległości: ");
+                Console.WriteLine("1) Manhattan");
+                Console.WriteLine("2) Metryka Euklidesowa");
+                Console.WriteLine("3) Metryka Czebyszewa");
+                Console.WriteLine("4) Metryka Minkowskiego");
+                Console.WriteLine("5) Metryka z logarytmem");
+                Console.Write("\r\nWybierz metrykę (1-5): ");
+                int metryka = int.Parse(Console.ReadLine());
+                Console.Clear();
+                Console.WriteLine("\nWybierz sposób przypisania do rekordu klasy decyzyjnej: ");
+                Console.WriteLine("1) Najwięcej klas decyzyjnych w 'k' najbliższych próbkach");
+                Console.WriteLine("2) Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej");
+                Console.Write("\r\nWybierz sposób (1-2): ");
+                int sposob = int.Parse(Console.ReadLine());
+
+                using (StreamWriter sw = File.CreateText(@"./plikiKonfiguracyjne/" + filename))
+                {
+                    if(dataset.name.Contains("crx"))
+                        sw.WriteLine("[crx - config]");
+                    if(dataset.name.Contains("australian"))
+                        sw.WriteLine("[australian - config]");
+                    if(dataset.name.Contains("breast"))
+                        sw.WriteLine("[breast-cancer-wisconsin - config]");
+                    sw.WriteLine("[Informacje o pliku]");
+                    sw.WriteLine("Liczba_kolumn=" + dataset.width);
+                    sw.WriteLine("Liczba_wierszy=" + dataset.length);
+                    sw.Write("Kolumny_symboliczne=");
+                    foreach(var item in symb)
+                        sw.Write(item + " ");
+                    sw.Write("\nKolumny_numeryczne=");
+                    foreach(var item in num)
+                        sw.Write(item + " ");
+                    sw.WriteLine("\n\n[Dane wprowadzone przez uzytkownika]");
+                    sw.WriteLine("[Metryka: 1-Manhattan | 2-Euklidesowa | 3-Czebyszewa | 4-Minkowskiego | 5-Z logarytmem]");
+                    sw.WriteLine("[Sposób: 1-Najwięcej klas decyzyjnych w 'k' najbliższych próbkach | 2-Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej]");
+                    sw.WriteLine("Parametr_k=" + k);
+                    sw.WriteLine("Parametr_p=" + p);
+                    sw.WriteLine("Klasa_decyzyjna=" + dec);
+                    sw.WriteLine("Metryka=" + metryka);
+                    sw.WriteLine("Sposob=" + sposob);
+                    sw.WriteLine("Dolny_zakres_normalizacji="+down); 
+                    sw.WriteLine("Gorny_zakres_normalizacji="+up);
+                    sw.Write("Kolumny_do_normalizacji=");
+                    foreach(var item in doNorm)
+                    {
+                        sw.Write(item + " ");
+                    }
+                    sw.Write("\nKolumny_do_usuniecia=");
+                    foreach(var item in doUs)
+                    {
+                        sw.Write(item + " ");
+                    }
+                    sw.Write("\nRekord=");
+                    foreach(var item in values)
+                    {
+                        sw.Write(item + " ");
+                    }
+                    sw.WriteLine("\n\n[Informacje o kolumnach]");
+                    sw.WriteLine("[Kolumny numeryczne - 'minimum maksimum srednia']");
+                    sw.WriteLine("[Kolumny symboliczne - 'znak_ilosc']");        
+                }
+                iniFile dane = new iniFile(@"./plikiKonfiguracyjne/" + filename);
+                createConfig.create.write(dataset.values, dane);
+                return;
             }
-
-            Console.Clear();
-            Console.Write("Wygenerowano rekord: ");
-            foreach (var item in record)
-                Console.Write(item + " ");
-            //------------------------------
-
-            Console.WriteLine("\n\nWybierz metrykę, którą liczone będą odgległości: ");
-            Console.WriteLine("1) Manhattan");
-            Console.WriteLine("2) Metryka Euklidesowa");
-            Console.WriteLine("3) Metryka Czebyszewa");
-            Console.WriteLine("4) Metryka Minkowskiego");
-            Console.WriteLine("5) Metryka z logarytmem");
-            Console.Write("\r\nWybierz metrykę (1-5): ");
-            int metryka = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("\nWybierz sposób przypisania do rekordu klasy decyzyjnej: ");
-            Console.WriteLine("1) Najwięcej klas decyzyjnych w 'k' najbliższych próbkach");
-            Console.WriteLine("2) Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej");
-            Console.Write("\r\nWybierz sposób (1-2): ");
-            int sposob = int.Parse(Console.ReadLine());
-
-            if (sposob == 1)
-                record[record.GetLength(0) - 1] = sposob1(k, metryka, record, dataset, p);
-            if (sposob == 2)
-                record[record.GetLength(0) - 1] = sposob2(k, metryka, record, dataset, p);
-
-            //Przypisanie klasy decyzyjnej do wygenerowanego rekordu:
-            if (record[record.GetLength(0) - 1] == null)
+            if(option==1)
             {
-                Console.WriteLine("\nNie udało się przypisać klasy decyzynej");
+                DirectoryInfo d = new DirectoryInfo(@"./plikiKonfiguracyjne");
+                FileInfo[] Files = d.GetFiles();
+
+                Console.Clear();
+                foreach (FileInfo plik in Files)
+                    Console.WriteLine("- " + plik.Name);
+
+                Console.Write("\r\nWybierz plik kongiguracyjny: ");
+                string filename = Console.ReadLine();
+
+                iniFile dane = new iniFile(@"./plikiKonfiguracyjne/"+filename);
+                dane.fillInfoNum(dane.lines);
+                dane.fillInfoSym(dane.lines);
+
+                List<object> rekord = new List<object>();
+                int czyOk = checkConfig.check.checkVal(dataset.values, dane);
+                if(czyOk==0)
+                    return;
+                else
+                {
+                    rekord = checkConfig.check.add(dataset.values, dane);
+                    dataset.values = checkConfig.check.config(dataset.values, dane);
+                }
+                var rekordTab = rekord.ToArray();
+                if (dane.sposob == 1)
+                    rekordTab[dane.newdec] = sposob1(dane.newdec,dane.k, dane.metryka, rekordTab, dataset, dane.p);
+                if (dane.sposob == 2)
+                    rekordTab[dane.newdec] = sposob2(dane.newdec,dane.k, dane.metryka, rekordTab, dataset, dane.p);
+                Console.Clear();
+                //Przypisanie klasy decyzyjnej do wygenerowanego rekordu:
+                if (rekordTab[dane.newdec] == null)
+                {
+                    Console.WriteLine("\nNie udało się przypisać klasy decyzynej");
+                }
+                else
+                    Console.WriteLine("\nKlasa decyzyjna dla wygenerowanego przez Ciebie rekordu to:" + rekordTab[dane.newdec]);
+
+                Console.Write("\nTwój rekord z klasą decyzyjną: ");
+                foreach (var item in rekordTab)
+                    Console.Write(item + " ");
             }
-            else
-                Console.WriteLine("\nKlasa decyzyjna dla wygenerowanego przez Ciebie rekordu to:" + record[record.GetLength(0) - 1]);
-
-            Console.Write("\nTwój rekord z klasą decyzyjną: ");
-            foreach (var item in record)
-                Console.Write(item + " ");
-            //------------------------------
-
+            
             Console.ReadKey();
         }
         //---------------------------------------------
@@ -156,97 +281,246 @@ namespace Zadanie2
         private static void option2(Base dataset)
         {
             Console.Clear();
-            Console.Write("\n\rPodaj parametr k: ");
-            int k = int.Parse(Console.ReadLine());
+            Console.WriteLine("0) Utwórz plik konfiguracyjny do wykonania algorytmu jeden vs reszta");
+            Console.WriteLine("1) Wykonaj algorytm na podstawie pliku konfiguracyjnego: ");
+            Console.Write("\r\nWybierz opcję: ");
+            int option = int.Parse(Console.ReadLine());
 
-            Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
-            int p = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("\nWybierz metrykę, którą liczone będą odgległości: ");
-            Console.WriteLine("1) Metryka Manhattan");
-            Console.WriteLine("2) Metryka Euklidesowa");
-            Console.WriteLine("3) Metryka Czebyszewa");
-            Console.WriteLine("4) Metryka Minkowskiego");
-            Console.WriteLine("5) Metryka z logarytmem");
-            Console.Write("\r\nWybierz metrykę (1-5): ");
-            int metryka = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("\nWybierz sposób przypisania do rekordu klasy decyzyjnej: ");
-            Console.WriteLine("1) Najwięcej klas decyzyjnych w 'k' najbliższych próbkach");
-            Console.WriteLine("2) Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej");
-            Console.Write("\r\nWybierz sposób (1-2): ");
-            int sposob = int.Parse(Console.ReadLine());
-
-            object[][] records = new object[dataset.length][];
-            int poprawnosc = 0;
-            int nieudane = 0;
-            int ilosc = dataset.length;
-
-            for (int i = 0; i < dataset.length; i++)
+            if (option == 0)
             {
-                object[] tab = new object[dataset.width];
-                for (int j = 0; j < dataset.width; j++)
+                List<int> symb = new List<int>();
+                List<int> num = new List<int>();
+
+                for (int i = 0; i < dataset.width;i++)
                 {
-                    if (dataset.values[i, j] == null)
-                    {
-                        tab[j] = null;
-                        continue;
-                    }
-                    if (dataset.values[i, j].GetType() == typeof(System.String))
-                    {
-                        tab[j] = dataset.values[i, j];
-                        continue;
-                    }
-                    else
-                        tab[j] = (double)dataset.values[i, j];
+                    if(dataset.values[0,i].GetType() == typeof(string))
+                        symb.Add(i);
+                    if(dataset.values[0,i].GetType() == typeof(double))
+                        num.Add(i);
                 }
-                records[i] = tab;
+                Console.Clear();
+                Console.Write("\r\nNazwij plik konfiguracyjny: ");
+                string filename = Console.ReadLine();
+
+                if(dataset.name.Contains("crx"))
+                    filename = filename + "Crx.ini";
+
+                if(dataset.name.Contains("australian"))
+                    filename = filename + "Australian.ini";
+
+                if(dataset.name.Contains("breast"))
+                    filename = filename + "BCW.ini";   
+
+                DirectoryInfo x = new DirectoryInfo(@"./plikiKonfiguracyjneCZ2");
+                FileInfo[] Files1 = x.GetFiles();
+
+                foreach (FileInfo plik in Files1)
+                {
+                    if (plik.Name == filename)
+                        filename = "New" + filename;
+                }
+                Console.Clear();
+                Console.Write("\rPodaj, która kolumna my być klasą decyzyjną: ");
+                int dec = int.Parse(Console.ReadLine());
+
+                Console.Write("\rPodaj dolną granicę przedziału:");
+                int down = int.Parse(Console.ReadLine());
+
+                Console.Write("\rPodaj górną granicę przedziału:");
+                int up = int.Parse(Console.ReadLine());
+
+                int[] doNorm = new int[dataset.values.GetLength(1)];
+                for (int i = 0; i < dataset.values.GetLength(1);i++)
+                    doNorm[i] = i;
+                
+                int[] doUs = new int[] { };
+                Console.WriteLine("\rPodaj (oddzielając spacją) numery kolumn, które mają być usunięte. Pozostaw puste, jeżeli nie chcesz nic usuwać: ");
+                string us = Console.ReadLine();
+                if(String.IsNullOrEmpty(us)==false)
+                {
+                    List<int> doUsList = us.Split(" ").Select(int.Parse).ToList();
+                    doUs = doUsList.ToArray();
+                }
+                Console.Clear();
+                Console.Write("\r\nPodaj parametr k: ");
+                int k = int.Parse(Console.ReadLine());
+
+                Console.Write("\r\nPodaj parametr p (p>0). Parametr jest używany do metryki Minkowskiego. Jeżeli nie zamierzasz używać tej metryki, wpisz '0':");
+                int p = int.Parse(Console.ReadLine());
+                Console.Clear();
+                Console.WriteLine("\n\nWybierz metrykę, którą liczone będą odgległości: ");
+                Console.WriteLine("1) Manhattan");
+                Console.WriteLine("2) Metryka Euklidesowa");
+                Console.WriteLine("3) Metryka Czebyszewa");
+                Console.WriteLine("4) Metryka Minkowskiego");
+                Console.WriteLine("5) Metryka z logarytmem");
+                Console.Write("\r\nWybierz metrykę (1-5): ");
+                int metryka = int.Parse(Console.ReadLine());
+                Console.Clear();
+                Console.WriteLine("\nWybierz sposób przypisania do rekordu klasy decyzyjnej: ");
+                Console.WriteLine("1) Najwięcej klas decyzyjnych w 'k' najbliższych próbkach");
+                Console.WriteLine("2) Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej");
+                Console.Write("\r\nWybierz sposób (1-2): ");
+                int sposob = int.Parse(Console.ReadLine());
+
+                using (StreamWriter sw = File.CreateText(@"./plikiKonfiguracyjneCZ2/" + filename))
+                {
+                    if(dataset.name.Contains("crx"))
+                        sw.WriteLine("[crx - config]");
+                    if(dataset.name.Contains("australian"))
+                        sw.WriteLine("[australian - config]");
+                    if(dataset.name.Contains("breast"))
+                        sw.WriteLine("[breast-cancer-wisconsin - config]");
+                    sw.WriteLine("[Informacje o pliku]");
+                    sw.WriteLine("Liczba_kolumn=" + dataset.width);
+                    sw.WriteLine("Liczba_wierszy=" + dataset.length);
+                    sw.Write("Kolumny_symboliczne=");
+                    foreach(var item in symb)
+                        sw.Write(item + " ");
+                    sw.Write("\nKolumny_numeryczne=");
+                    foreach(var item in num)
+                        sw.Write(item + " ");
+                    sw.WriteLine("\n\n[Dane wprowadzone przez uzytkownika]");
+                    sw.WriteLine("[Metryka: 1-Manhattan | 2-Euklidesowa | 3-Czebyszewa | 4-Minkowskiego | 5-Z logarytmem]");
+                    sw.WriteLine("[Sposób: 1-Najwięcej klas decyzyjnych w 'k' najbliższych próbkach | 2-Najmniejsza suma odległości w 'k' najbliższych próbkach z każdej klasy decyzyjnej]");
+                    sw.WriteLine("Parametr_k=" + k);
+                    sw.WriteLine("Parametr_p=" + p);
+                    sw.WriteLine("Klasa_decyzyjna=" + dec);
+                    sw.WriteLine("Metryka=" + metryka);
+                    sw.WriteLine("Sposob=" + sposob);
+                    sw.WriteLine("Dolny_zakres_normalizacji="+down); 
+                    sw.WriteLine("Gorny_zakres_normalizacji="+up);
+                    sw.Write("Kolumny_do_normalizacji=");
+                    foreach(var item in doNorm)
+                    {
+                        sw.Write(item + " ");
+                    }
+                    sw.Write("\nKolumny_do_usuniecia=");
+                    foreach(var item in doUs)
+                    {
+                        sw.Write(item + " ");
+                    }
+                    sw.Write("\nRekord=");
+                    sw.WriteLine("\n\n[Informacje o kolumnach]");
+                    sw.WriteLine("[Kolumny numeryczne - 'minimum maksimum srednia']");
+                    sw.WriteLine("[Kolumny symboliczne - 'znak_ilosc']");        
+                }
+                iniFile dane = new iniFile(@"./plikiKonfiguracyjneCZ2/" + filename);
+                createConfig.create.write(dataset.values, dane);
+                return;
             }
-            Console.Clear();
-            Console.Write("Pracuję nad tym...");
-            Parallel.For(0, records.GetLength(0), i =>
+
+            if (option == 1)
             {
-                object[] tab0 = new object[dataset.width];
-                for (int j = 0; j < dataset.width - 1; j++)
+                DirectoryInfo d = new DirectoryInfo(@"./plikiKonfiguracyjneCZ2");
+                FileInfo[] Files = d.GetFiles();
+
+                Console.Clear();
+                foreach (FileInfo plik in Files)
+                    Console.WriteLine("- " + plik.Name);
+
+                Console.Write("\r\nWybierz plik kongiguracyjny: ");
+                string filename = Console.ReadLine();
+
+                iniFile dane = new iniFile(@"./plikiKonfiguracyjneCZ2/"+filename);
+                dane.fillInfoNum(dane.lines);
+                dane.fillInfoSym(dane.lines);
+
+                int czyOk = checkConfig.check.checkVal(dataset.values, dane);
+                if(czyOk==0)
+                    return;
+                else
+                    dataset.values = checkConfig.check.config(dataset.values, dane);
+
+                object[][] records = new object[dataset.values.GetLength(0)][];
+                int poprawnosc = 0;
+                int nieudalo = 0;
+                int nieudane = 0;
+                int ilosc = dataset.values.GetLength(0);
+
+                for (int i = 0; i < dataset.values.GetLength(0); i++)
                 {
-                    if (records[i][j] == null)
-                        tab0[j] = null;
-                    else
-                        tab0[j] = (double)records[i][j];
-                }
-                if (sposob == 1)
-                {
-                    tab0[tab0.GetLength(0) - 1] = sposob1(k, metryka, tab0, dataset, p);
-                    if (tab0[tab0.GetLength(0) - 1] == null)
+                    object[] tab = new object[dataset.values.GetLength(1)];
+                    for (int j = 0; j < dataset.values.GetLength(1); j++)
                     {
-                        nieudane++;
-                        return;
+                        if (dataset.values[i, j] == null)
+                        {
+                            tab[j] = null;
+                            continue;
+                        }
+                        if (dataset.values[i, j].GetType() == typeof(System.String))
+                        {
+                            tab[j] = dataset.values[i, j];
+                            continue;
+                        }
+                        else
+                            tab[j] = (double)dataset.values[i, j];
                     }
-                    if (tab0[tab0.GetLength(0) - 1].ToString() == records[i][records[i].GetLength(0) - 1].ToString())
-                        poprawnosc++;
+                    records[i] = tab;
                 }
-                if (sposob == 2)
+                Console.Clear();
+                Console.Write("Pracuję nad tym...");
+                Parallel.For(0, records.GetLength(0), i =>
+                //for (int i = 0; i < records.GetLength(0);i++)
                 {
-                    tab0[tab0.GetLength(0) - 1] = sposob2(k, metryka, tab0, dataset, p);
-                    if (tab0[tab0.GetLength(0) - 1] == null)
+                    object[] tab0 = new object[dataset.values.GetLength(1)];
+                    for (int j = 0; j < dataset.values.GetLength(1); j++)
                     {
-                        nieudane++;
-                        return;
+                        if (j == dane.newdec)
+                            continue;
+                        if (records[i][j] == null)
+                            tab0[j] = null;
+                        else
+                            tab0[j] = (double)records[i][j];
                     }
-                    if (tab0[tab0.GetLength(0) - 1].ToString() == records[i][records[i].GetLength(0) - 1].ToString())
-                        poprawnosc++;
-                }
-            });
-            Console.Clear();
-            Console.WriteLine("Ilość rekordów: " + ilosc + "\nUdana klasyfikacja: " + (ilosc - nieudane) + "\nNieudana klasyfikacja: " + nieudane + "\nPoprawnie sklasyfikowano: " + poprawnosc + "\nPoprawność knn wynosi: " + (double)poprawnosc / ilosc * 100 + "%");
-            Console.ReadKey();
+                    if (dane.sposob == 1)
+                    {
+                        tab0[dane.newdec] = sposob1(dane.newdec, dane.k, dane.metryka, tab0, dataset, dane.p);
+                        if (tab0[dane.newdec] == null || records[i][dane.newdec]==null)
+                        {
+                            nieudalo++;
+                            return;
+
+                        }
+
+                        if (tab0[dane.newdec].ToString() == records[i][dane.newdec].ToString())
+                            poprawnosc++;
+                        else
+                            nieudane++;
+                    }
+                    if (dane.sposob == 2)
+                    {
+                        tab0[dane.newdec] = sposob2(dane.newdec, dane.k, dane.metryka, tab0, dataset, dane.p);
+                        if (tab0[dane.newdec] == null || records[i][dane.newdec]==null)
+                        {
+                            nieudalo++;
+                            return;
+
+                        }
+                        if (tab0[dane.newdec].ToString() == records[i][dane.newdec].ToString())
+                            poprawnosc++;
+                        else
+                            nieudane++;
+                    }
+                //}
+                });
+                double udanaK = (ilosc - nieudalo);
+                double pokrycie = (udanaK / ilosc) * 100;
+                double skutecznosc = ((double)poprawnosc / udanaK)*100;
+
+                Console.Clear();
+                Console.WriteLine("Ilość rekordów: " + ilosc + "\nUdana klasyfikacja: " + udanaK + "\nNieudana klasyfikacja: " + nieudalo + "\nPokrycie wynosi: "+ pokrycie+"%\nPoprawnie sklasyfikowano: " + poprawnosc +"\nBłędnie sklasyfikowano: "+nieudane+ "\nSkuteczność knn wynosi: " + skutecznosc + "%");
+                Console.ReadKey();
+            }
+           
+            
 
         }
         //---------------------------------------------
-        private static object sposob1(int k, int metryka, object[] record, Base dataset, int p)
+        private static object sposob1(int dec, int k, int metryka, object[] record, Base dataset, int p)
         {
             //Dodawanie do słownika każdego rekordu (Klucza) oraz odległości do wygenerowanego rekordu (Wartości):
-            var dictionary = CreateDictionary(record, metryka, dataset, p);
+            var dictionary = CreateDictionary(record, metryka, dataset, p, dec);
 
             //Posortowany słownik weług odległości rosnąco:
             var sortedDict = from entry in dictionary orderby entry.Value ascending select entry;
@@ -255,7 +529,7 @@ namespace Zadanie2
             object[] klasy = new object[k];
             for (int i = 0; i < k; i++)
             {
-                klasy[i] = sortedDict.ElementAt(i).Key.ElementAt(dataset.width - 1);
+                klasy[i] = sortedDict.ElementAt(i).Key.ElementAt(dec);
             }
 
             //Tablica występujących klas bez powtórzeń:
@@ -270,9 +544,13 @@ namespace Zadanie2
                 int ilosc = 0;
                 for (int j = 0; j < klasy.GetLength(0); j++)
                 {
+                    if(klasydist[i] == null || klasy[j] ==null)
+                        continue;
                     if (klasydist[i].ToString() == klasy[j].ToString())
                         ilosc++;
                 }
+                if(klasydist[i]==null)
+                    continue;
                 wartosci.Add(klasydist[i], ilosc);
             }
 
@@ -288,23 +566,23 @@ namespace Zadanie2
             else
                 return wartoscisorted.ElementAt(0).Key;
         }
-        private static object sposob2(int k, int metryka, object[] record, Base dataset, int p)
+        private static object sposob2(int dec,int k, int metryka, object[] record, Base dataset, int p)
         {
             //Dodawanie do słownika każdego rekordu (Klucza) oraz odległości do wygenerowanego rekordu (Wartości):
-            var dictionary = CreateDictionary(record, metryka, dataset, p);
+            var dictionary = CreateDictionary(record, metryka, dataset, p,dec);
 
             //Posortowany słownik według klasy decyzyjnej oraz odległości rosnąco:
-            var sortedDict = from entry in dictionary orderby entry.Key.ElementAt(dataset.width - 1), entry.Value ascending select entry;
+            var sortedDict = from entry in dictionary orderby entry.Key.ElementAt(dec), entry.Value ascending select entry;
 
             int count = dictionary.Count();
             //Tablica wszystkich występujących klas decyzyjnych:
             object[] klasy = new object[count];
             for (int i = 0; i < count; i++)
             {
-                if (sortedDict.ElementAt(i).Key.ElementAt(dataset.width - 1) == null)
+                if (sortedDict.ElementAt(i).Key.ElementAt(dec) == null)
                     continue;
                 else
-                    klasy[i] = sortedDict.ElementAt(i).Key.ElementAt(dataset.width - 1);
+                    klasy[i] = sortedDict.ElementAt(i).Key.ElementAt(dec);
             }
 
             //Tablica występujących klas bez powtórzeń:
@@ -319,9 +597,13 @@ namespace Zadanie2
                 int ilosc = 0;
                 for (int j = 0; j < klasy.GetLength(0); j++)
                 {
+                    if(klasydist[i]==null || klasy[j]==null)
+                        continue;
                     if (klasydist[i].ToString() == klasy[j].ToString())
                         ilosc++;
                 }
+                if(klasydist[i]==null)
+                    continue;
                 wartosci.Add(klasydist[i], ilosc);
             }
 
@@ -333,7 +615,9 @@ namespace Zadanie2
                 for (int j = 0; j < sortedDict.Count(); j++)
                 {
                     double sum = 0;
-                    if (wartosci.ElementAt(i).Key.ToString() == sortedDict.ElementAt(j).Key.ElementAt(dataset.width - 1).ToString())
+                    if(wartosci.ElementAt(i).Key==null || sortedDict.ElementAt(j).Key.ElementAt(dec)==null)
+                        continue;
+                    if (wartosci.ElementAt(i).Key.ToString() == sortedDict.ElementAt(j).Key.ElementAt(dec).ToString())
                     {
                         var ilosc = sortedDict.Skip(j).Take(k);
 
@@ -346,15 +630,18 @@ namespace Zadanie2
             }
 
             var sortedSumy = from entry in sumy orderby entry.Value ascending select entry;
-
-            if (sortedSumy.ElementAt(0).Value == sortedSumy.ElementAt(1).Value)
-                return null;
+            if (sortedSumy.Count() > 1)
+            {
+                if (sortedSumy.ElementAt(0).Value == sortedSumy.ElementAt(1).Value)
+                    return null;
+                else
+                    return sortedSumy.ElementAt(0).Key;
+            }
             else
                 return sortedSumy.ElementAt(0).Key;
-
         }
 
-        private static Dictionary<object[], double> CreateDictionary(object[] record, int metryka, Base dataset, int p)
+        private static Dictionary<object[], double> CreateDictionary(object[] record, int metryka, Base dataset, int p, int dec)
         {
             var dictionary = new Dictionary<object[], double>(dataset.values.GetLength(0));
 
@@ -362,7 +649,7 @@ namespace Zadanie2
 
             for (int i = 0; i < dataset.values.GetLength(0); i++)
             {
-                object[] tab = new object[dataset.width];
+                object[] tab = new object[dataset.values.GetLength(1)];
                 for (int j = 0; j < dataset.values.GetLength(1); j++)
                 {
                     if (dataset.values[i, j] == null)
@@ -381,8 +668,10 @@ namespace Zadanie2
                 bool istnieje = true;
                 if (tab.GetLength(0) == record1.GetLength(0))
                 {
-                    for (int j = 0; j < tab.GetLength(0) - 1; j++)
+                    for (int j = 0; j < tab.GetLength(0); j++)
                     {
+                        if(j==dec)
+                            continue;
                         if (tab[j] == null || record1[j] == null)
                         {
                             if ((tab[j] == null && record1[j] != null) || (record1[j] == null && tab[j] != null))
@@ -405,24 +694,26 @@ namespace Zadanie2
                 if (istnieje == false)
                 {
                     if (metryka == 1)
-                        dictionary.Add(tab, MetricManhattan(record1, tab));
+                        dictionary.Add(tab, MetricManhattan(record1, tab,dec));
                     if (metryka == 2)
-                        dictionary.Add(tab, MetricEuklides(record1, tab));
+                        dictionary.Add(tab, MetricEuklides(record1, tab, dec));
                     if (metryka == 3)
-                        dictionary.Add(tab, MetricCzebyszew(record1, tab));
+                        dictionary.Add(tab, MetricCzebyszew(record1, tab, dec));
                     if (metryka == 4)
-                        dictionary.Add(tab, MetricMinkowski(record1, tab, p));
+                        dictionary.Add(tab, MetricMinkowski(record1, tab, p, dec));
                     if (metryka == 5)
-                        dictionary.Add(tab, MetricLogarytm(record1, tab));
+                        dictionary.Add(tab, MetricLogarytm(record1, tab, dec));
                 }
             }
             return dictionary;
         }
-        private static double MetricManhattan(object[] tab1, object[] tab2)
+        private static double MetricManhattan(object[] tab1, object[] tab2, int dec)
         {
             double sum = 0;
-            for (int i = 0; i < tab1.GetLength(0) - 1; i++)
+            for (int i = 0; i < tab1.GetLength(0); i++)
             {
+                if(i==dec)
+                    continue;
                 if (tab1[i] == null || tab2[i] == null)
                     continue;
                 else
@@ -430,12 +721,14 @@ namespace Zadanie2
             }
             return sum;
         }
-        private static double MetricEuklides(object[] tab1, object[] tab2)
+        private static double MetricEuklides(object[] tab1, object[] tab2, int dec)
         {
             double sum = 0;
 
-            for (int i = 0; i < tab1.GetLength(0) - 1; i++)
+            for (int i = 0; i < tab1.GetLength(0); i++)
             {
+                if(i==dec)
+                    continue;
                 if (tab1[i] == null)
                     continue;
                 if (tab2[i] == null)
@@ -445,12 +738,14 @@ namespace Zadanie2
             }
             return Math.Sqrt(sum);
         }
-        private static double MetricCzebyszew(object[] tab1, object[] tab2)
+        private static double MetricCzebyszew(object[] tab1, object[] tab2, int dec)
         {
             double max = 0;
 
-            for (int i = 0; i < tab1.GetLength(0) - 1; i++)
+            for (int i = 0; i < tab1.GetLength(0); i++)
             {
+                if(i==dec)
+                    continue;
                 if (tab1[i] == null)
                     continue;
                 if (tab2[i] == null)
@@ -464,11 +759,13 @@ namespace Zadanie2
             }
             return max;
         }
-        private static double MetricMinkowski(object[] tab1, object[] tab2, int p)
+        private static double MetricMinkowski(object[] tab1, object[] tab2, int p, int dec)
         {
             double sum = 0;
-            for (int i = 0; i < tab1.GetLength(0) - 1; i++)
+            for (int i = 0; i < tab1.GetLength(0); i++)
             {
+                if(i==dec)
+                    continue;
                 if (tab1[i] == null)
                     continue;
                 if (tab2[i] == null)
@@ -480,12 +777,14 @@ namespace Zadanie2
             }
             return Math.Pow(sum, 1 / p);
         }
-        private static double MetricLogarytm(object[] tab1, object[] tab2)
+        private static double MetricLogarytm(object[] tab1, object[] tab2,int dec)
         {
             double sum = 0;
 
-            for (int i = 0; i < tab1.GetLength(0) - 1; i++)
+            for (int i = 0; i < tab1.GetLength(0); i++)
             {
+                if(i==dec)
+                    continue;
                 if (tab1[i] == null)
                     continue;
                 if (tab2[i] == null)
@@ -637,7 +936,7 @@ namespace Zadanie2
                     //Wypełnianie jeżeli plik jest w formacie '.dat':
                     if (this.name.Substring(this.name.Length - 4, 4) == ".dat")
                     {
-                        for (int j = 0; j < this.values.GetLength(1); j++)
+                        for (int j = 0; j < width; j++)
                         {
                             string[] data = line.Split(' ');
                             this.values[i, j] = data[j];
@@ -647,7 +946,7 @@ namespace Zadanie2
                     //Wypełnianie jeżeli plik jest w formacie '.data' lub '.csv':
                     if (this.name.Substring(this.name.Length - 5, 5) == ".data" || this.name.Substring(this.name.Length - 4, 4) == ".csv")
                     {
-                        for (int j = 0; j < this.values.GetLength(1); j++)
+                        for (int j = 0; j < width; j++)
                         {
                             string[] data = line.Split(',');
                             this.values[i, j] = data[j];
@@ -667,6 +966,7 @@ namespace Zadanie2
                                         this.values[i, k] = line.Substring(11, line.Length - 13);
                                     else
                                         this.values[i, k] = line.Substring(11, line.Length - 12);
+
                                 }
                                 else
                                 {

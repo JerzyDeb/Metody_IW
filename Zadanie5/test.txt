@@ -1,0 +1,26 @@
+digraph G {
+"id:0\nprot;\n0"->"id:1\nant;\n5"[label = 5];
+"id:0\nprot;\n0"->"id:2\nant;\n6"[label = 6];
+"id:0\nprot;\n0"->"id:3\nant;\n7"[label = 7];
+"id:0\nprot;\n0"->"id:4\nant;\n8"[label = 8];
+"id:1\nant;\n5"->"id:5\nprot;\n10"[label = 5];
+"id:1\nant;\n5"->"id:6\nKoniec;\nWynik:0"[label = 6];
+"id:1\nant;\n5"->"id:7\nKoniec;\nWynik:1"[label = 7];
+"id:1\nant;\n5"->"id:8\nKoniec;\nWynik:1"[label = 8];
+"id:5\nprot;\n10"->"id:21\nKoniec;\nWynik:-1"[label = 5];
+"id:5\nprot;\n10"->"id:22\nKoniec;\nWynik:-1"[label = 6];
+"id:5\nprot;\n10"->"id:23\nKoniec;\nWynik:-1"[label = 7];
+"id:5\nprot;\n10"->"id:24\nKoniec;\nWynik:-1"[label = 8];
+"id:2\nant;\n6"->"id:9\nKoniec;\nWynik:0"[label = 5];
+"id:2\nant;\n6"->"id:10\nKoniec;\nWynik:1"[label = 6];
+"id:2\nant;\n6"->"id:11\nKoniec;\nWynik:1"[label = 7];
+"id:2\nant;\n6"->"id:12\nKoniec;\nWynik:1"[label = 8];
+"id:3\nant;\n7"->"id:13\nKoniec;\nWynik:1"[label = 5];
+"id:3\nant;\n7"->"id:14\nKoniec;\nWynik:1"[label = 6];
+"id:3\nant;\n7"->"id:15\nKoniec;\nWynik:1"[label = 7];
+"id:3\nant;\n7"->"id:16\nKoniec;\nWynik:1"[label = 8];
+"id:4\nant;\n8"->"id:17\nKoniec;\nWynik:1"[label = 5];
+"id:4\nant;\n8"->"id:18\nKoniec;\nWynik:1"[label = 6];
+"id:4\nant;\n8"->"id:19\nKoniec;\nWynik:1"[label = 7];
+"id:4\nant;\n8"->"id:20\nKoniec;\nWynik:1"[label = 8];
+}
